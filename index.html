@@ -12,10 +12,13 @@
 <meta property="og:image" content="https://gallirohik.github.io/dots/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="A dots and boxes board with a note: Rohik's strategy: hope.">
+<meta property="og:image:alt" content="A dots and boxes board with a sealed envelope.">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:image" content="https://gallirohik.github.io/dots/og.jpg">
 <meta name="theme-color" content="#fbf8f3">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -318,19 +321,7 @@ label{display:block;font-weight:700;font-size:13px;color:var(--soft);margin:0 0 
 <div class="sheet hide" id="sheet" role="dialog" aria-modal="true" aria-live="polite"></div>
 
 <script type="module">
-/* ============================================================
-   1. Paste your Firebase web config here (see README.md)
-   ============================================================ */
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyCjKxH76KX_KTekfE-Gw0XVGJlhsSDnWAc",
-  authDomain: "dotsboxes-38181.firebaseapp.com",
-  databaseURL: "https://dotsboxes-38181-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "dotsboxes-38181",
-  storageBucket: "dotsboxes-38181.firebasestorage.app",
-  messagingSenderId: "994797509983",
-  appId: "1:994797509983:web:32be9fb439185bce192aea"
-};
-/* ============================================================ */
+/* Firebase settings live in config.js next to this file (see README). */
 
 const $=id=>document.getElementById(id);
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
@@ -357,7 +348,9 @@ $('myname').value=myName;
 /* ---------- Firebase ---------- */
 let db=null,F=null;
 const fbP=(async()=>{
- if(!FIREBASE_CONFIG.databaseURL)return null;
+ let FIREBASE_CONFIG=null;
+ try{({FIREBASE_CONFIG}=await import('./config.js'))}catch(e){console.warn('config.js not found',e);return null}
+ if(!FIREBASE_CONFIG||!FIREBASE_CONFIG.databaseURL)return null;
  const app=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
  F=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
  db=F.getDatabase(app.initializeApp(FIREBASE_CONFIG));return db;
@@ -572,7 +565,7 @@ async function enter(c,creating){
  render(false);setWait('Connecting…',true);
  const d=await fbP;
  if(mode!=='online'||code!==c)return;
- if(!d){setWait('Online play isn’t set up yet: add your Firebase config to index.html (see README).',false);return}
+ if(!d){setWait('Online play isn’t set up yet: fill in config.js (see README).',false);return}
  try{
   const pRef=F.ref(d,gpath('players'));
   if(!creating){const snap=await F.get(pRef);if(!snap.exists()){mode='start';$('startMsg').textContent='No game with that code. Check it with him.';render(false);return}}
@@ -605,7 +598,7 @@ async function enter(c,creating){
  }catch(e){console.error(e);setWait('Couldn’t connect to the game. Check your Firebase rules (README) and try again.',false)}
 }
 function stopListening(){for(const u of unsubs)try{u()}catch(e){}unsubs=[];if(db&&code&&seat)try{F.set(F.ref(db,gpath(`players/${seat}/on`)),false)}catch(e){}}
-const TEASE=['He says he’s “pretty good” at this. Feel free to prove him wrong.','Winner asks one question. He’s already nervous about yours.','Rumour is he practised against himself. And lost.','His strategy, according to him: hope. Yours can be better.'];
+const TEASE=['He says he’s “pretty good” at this. Feel free to prove him wrong.','Winner asks one question. He’s already nervous about yours.','Rumour is he practised against himself. And lost.'];
 async function invited(c){
  document.body.classList.add('invited');$('codein').value=c.toUpperCase();
  const line=TEASE[Math.floor(Math.random()*TEASE.length)];
@@ -614,7 +607,7 @@ async function invited(c){
  $('startMsg').textContent='';$('myname').placeholder='How he’ll see you';
  const d=await fbP;if(!d)return;
  try{const snap=await F.get(F.ref(d,`games/${c}/players/1/name`));const who=String(snap.val()||'').trim().slice(0,16);
-  if(who){$('invK').textContent='A little invitation from '+who;$('heroH').textContent=who+' has challenged you';$('heroP').textContent=line.replace(/^He\b/,who).replace(/^His\b/,who+'’s')}
+  if(who){$('invK').textContent='A little invitation from '+who;$('heroH').textContent=who+' has challenged you';$('heroP').textContent=line.replace(/^He\b/,who)}
   else{const ex=await F.get(F.ref(d,`games/${c}/players`));if(!ex.exists())$('startMsg').textContent='This invite looks old — ask him for a fresh link.'}
  }catch(e){}
 }
@@ -704,7 +697,7 @@ window.addEventListener('pagehide',()=>{if(db&&code&&seat)try{F.set(F.ref(db,gpa
 
 render(false);$('startMsg').textContent='';
 {const h=(location.hash||'').slice(1);if(/^[a-z0-9]{3,6}$/i.test(h)){if(myName&&store.get('dab-seat-'+h.toLowerCase()))enter(h);else invited(h.toLowerCase())}}
-fbP.then(d=>{if(!d&&mode==='start'&&!$('startMsg').textContent)$('startMsg').textContent='Online play needs Firebase set up (see README). You can still try it on this device.'});
+fbP.then(d=>{if(!d&&mode==='start'&&!$('startMsg').textContent)$('startMsg').textContent='Online play needs config.js set up (see README). You can still try it on this device.'});
 </script>
 </body>
 </html>
