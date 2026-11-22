@@ -1030,10 +1030,10 @@ $('local').addEventListener('click',()=>{stopListening();mode='local';code='';se
 function leave(){document.body.classList.remove('invited');setTimeout(()=>{avPicker($('avStart'));renderHome()},0);$('joinb').textContent='Join';$('joinb').className='soft';stopListening();code='';seat=0;players={};mode='start';tab='play';myqOpen=false;try{history.replaceState(null,'',location.pathname)}catch(e){}render(false)}
 $('leave').addEventListener('click',leave);$('leave2').addEventListener('click',leave);
 function legacyCopy(text){try{const t=document.createElement('textarea');t.value=text;t.setAttribute('readonly','');t.style.cssText='position:fixed;top:-1000px;opacity:0';document.body.appendChild(t);t.select();const ok=document.execCommand('copy');t.remove();return ok}catch(e){return false}}
-$('copy').addEventListener('click',()=>{const msg=inviteMsg(),btn=$('copy');
+$('copy').addEventListener('click',()=>{const msg=inviteLink(),btn=$('copy');
  const done=()=>{btn.textContent='Copied — paste it to her';$('copyHelp').classList.add('hide');setTimeout(()=>btn.textContent='Copy invite link',2400)};
  const fail=()=>{if(legacyCopy(msg)){done();return}const inp=$('invite');inp.focus();inp.select();$('copyHelp').classList.remove('hide')};
- if(navigator.share&&/Android|iPhone|iPad/i.test(navigator.userAgent)){navigator.share({text:msg}).catch(()=>{});return}
+ if(navigator.share&&/Android|iPhone|iPad/i.test(navigator.userAgent)){navigator.share({url:msg}).catch(()=>{});return}
  try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(msg).then(done,fail);else fail()}catch(e){fail()}});
 $('invite').addEventListener('focus',e=>e.target.select());
 $('create').addEventListener('click',()=>{if(!myName){$('startMsg').textContent='Add your name first, so she knows it’s you.';$('myname').focus();return}enter(mkCode(),true)});
