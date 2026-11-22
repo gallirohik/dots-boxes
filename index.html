@@ -3,7 +3,19 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Dots &amp; Boxes</title>
+<title>You've been challenged to dots &amp; boxes</title>
+<meta name="description" content="Winner asks one question. Loser answers honestly. Your move.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="You've been challenged to dots &amp; boxes">
+<meta property="og:description" content="A little invitation from Rohik. Winner asks one question — loser answers honestly.">
+<meta property="og:url" content="https://gallirohik.github.io/dots/">
+<meta property="og:image" content="https://gallirohik.github.io/dots/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="A dots and boxes board with a note: Rohik's strategy: hope.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://gallirohik.github.io/dots/og.jpg">
+<meta name="theme-color" content="#fbf8f3">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -55,6 +67,9 @@ label{display:block;font-weight:700;font-size:13px;color:var(--soft);margin:0 0 
 .hero{text-align:center;padding:10px 0 4px}
 .hero h1{font:italic 600 clamp(40px,10vw,54px)/1.02 'Cormorant Garamond',Georgia,serif;margin:4px 0 10px;text-wrap:balance}
 .hero p{margin:0 auto;max-width:32ch;color:var(--soft)}
+.hero .invk{font-weight:800;font-size:14px;color:var(--p2);margin:0 auto!important}
+.join>input{flex:1 1 auto;width:auto;min-width:0}.join>button{flex:none}
+.invited .hide-inv{display:none!important}
 .hero .ill{width:min(300px,86%);margin:18px auto 22px}
 .panel{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:22px;display:grid;gap:14px;box-shadow:0 20px 40px -32px var(--shadow)}
 .or{display:flex;align-items:center;gap:12px;color:var(--soft);font-size:13px}.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
@@ -229,18 +244,19 @@ label{display:block;font-weight:700;font-size:13px;color:var(--soft);margin:0 0 
     <path d="M246 126h18v18" fill="none" stroke="var(--p2)" stroke-width="1.6" stroke-linecap="round"/><path d="M36 126v18h18" fill="none" stroke="var(--p1)" stroke-width="1.6" stroke-linecap="round"/>
     <path class="h" d="M60 40l2 5 5 2-5 2-2 5-2-5-5-2 5-2zM240 30l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z"/>
    </svg>
-   <h1>How well I want to know you</h1>
-   <p>A quiet little game for two. Whoever wins gets to ask the other one question.</p>
+   <p class="invk hide" id="invK"></p>
+   <h1 id="heroH">How well I want to know you</h1>
+   <p id="heroP">A quiet little game for two. Whoever wins gets to ask the other one question.</p>
   </div>
   <div class="panel" style="margin-top:22px">
    <div><label for="myname">Your name</label><input id="myname" maxlength="16" placeholder="How she'll see you" autocomplete="given-name"></div>
-   <div><label>Dots per side</label><div class="seg" id="segStart" role="radiogroup" aria-label="Dots per side"><button data-d="4">4</button><button data-d="5">5</button><button data-d="6">6</button><button data-d="7">7</button></div><p class="muted small segcap" style="margin:6px 0 0;text-align:center"></p></div>
-   <button id="create">Start a game</button>
-   <div class="or">or join with a code</div>
+   <div class="hide-inv"><label>Dots per side</label><div class="seg" id="segStart" role="radiogroup" aria-label="Dots per side"><button data-d="4">4</button><button data-d="5">5</button><button data-d="6">6</button><button data-d="7">7</button></div><p class="muted small segcap" style="margin:6px 0 0;text-align:center"></p></div>
+   <button id="create" class="hide-inv">Start a game</button>
+   <div class="or hide-inv">or join with a code</div>
    <div class="join"><input id="codein" class="code-in" maxlength="6" placeholder="CODE" autocapitalize="characters" aria-label="Game code"><button class="soft" id="joinb">Join</button></div>
    <p class="msg" id="startMsg">Connecting…</p>
   </div>
-  <p style="text-align:center;margin:12px 0 0"><button class="link" id="local">Try it on this device first</button></p>
+  <p class="hide-inv" style="text-align:center;margin:12px 0 0"><button class="link" id="local">Try it on this device first</button></p>
  </section>
 
  <!-- WAITING -->
@@ -589,9 +605,22 @@ async function enter(c,creating){
  }catch(e){console.error(e);setWait('Couldn’t connect to the game. Check your Firebase rules (README) and try again.',false)}
 }
 function stopListening(){for(const u of unsubs)try{u()}catch(e){}unsubs=[];if(db&&code&&seat)try{F.set(F.ref(db,gpath(`players/${seat}/on`)),false)}catch(e){}}
+const TEASE=['He says he’s “pretty good” at this. Feel free to prove him wrong.','Winner asks one question. He’s already nervous about yours.','Rumour is he practised against himself. And lost.','His strategy, according to him: hope. Yours can be better.'];
+async function invited(c){
+ document.body.classList.add('invited');$('codein').value=c.toUpperCase();
+ const line=TEASE[Math.floor(Math.random()*TEASE.length)];
+ $('heroH').textContent='You’ve been challenged';$('heroP').textContent=line;
+ $('invK').classList.remove('hide');$('invK').textContent='A little invitation';$('joinb').textContent='Accept';$('joinb').className='blush';
+ $('startMsg').textContent='';$('myname').placeholder='How he’ll see you';
+ const d=await fbP;if(!d)return;
+ try{const snap=await F.get(F.ref(d,`games/${c}/players/1/name`));const who=String(snap.val()||'').trim().slice(0,16);
+  if(who){$('invK').textContent='A little invitation from '+who;$('heroH').textContent=who+' has challenged you';$('heroP').textContent=line.replace(/^He\b/,who).replace(/^His\b/,who+'’s')}
+  else{const ex=await F.get(F.ref(d,`games/${c}/players`));if(!ex.exists())$('startMsg').textContent='This invite looks old — ask him for a fresh link.'}
+ }catch(e){}
+}
 function mkCode(){const a='bcdfghjkmnprstvz',v='aeiou';let s='';for(let i=0;i<5;i++)s+=(i%2?v:a)[Math.floor(Math.random()*(i%2?5:16))];return s}
 const inviteLink=()=>location.origin+location.pathname+'#'+code;
-const inviteMsg=()=>`Up for a little game of dots and boxes? Winner gets to ask one question :) ${inviteLink()}`;
+const inviteMsg=()=>`I challenge you to dots & boxes. Winner asks one question, loser answers honestly. Fair warning: I’ve been practising. ${inviteLink()}`;
 
 /* ---------- reactions ---------- */
 const REACTS=['😄','🙈','😏','😮','👏','🤍'];
@@ -659,7 +688,7 @@ $('myname').addEventListener('input',()=>{myName=$('myname').value.trim().slice(
 const add2=()=>{addQ($('qin2').value);$('qin2').value='';listInto($('mylist2'))};
 $('qadd2').addEventListener('click',add2);$('qin2').addEventListener('keydown',e=>{if(e.key==='Enter')add2()});
 $('local').addEventListener('click',()=>{stopListening();mode='local';code='';seat=0;loadLocal();S=fresh();sheetKey='';render(false)});
-function leave(){stopListening();code='';seat=0;players={};mode='start';tab='play';myqOpen=false;try{history.replaceState(null,'',location.pathname)}catch(e){}render(false)}
+function leave(){document.body.classList.remove('invited');$('joinb').textContent='Join';$('joinb').className='soft';stopListening();code='';seat=0;players={};mode='start';tab='play';myqOpen=false;try{history.replaceState(null,'',location.pathname)}catch(e){}render(false)}
 $('leave').addEventListener('click',leave);$('leave2').addEventListener('click',leave);
 function legacyCopy(text){try{const t=document.createElement('textarea');t.value=text;t.setAttribute('readonly','');t.style.cssText='position:fixed;top:-1000px;opacity:0';document.body.appendChild(t);t.select();const ok=document.execCommand('copy');t.remove();return ok}catch(e){return false}}
 $('copy').addEventListener('click',()=>{const msg=inviteMsg(),btn=$('copy');
@@ -674,7 +703,7 @@ $('codein').addEventListener('keydown',e=>{if(e.key==='Enter')$('joinb').click()
 window.addEventListener('pagehide',()=>{if(db&&code&&seat)try{F.set(F.ref(db,gpath(`players/${seat}/on`)),false)}catch(e){}});
 
 render(false);$('startMsg').textContent='';
-{const h=(location.hash||'').slice(1);if(/^[a-z0-9]{3,6}$/i.test(h)){if(myName)enter(h);else{$('codein').value=h.toUpperCase();$('startMsg').textContent='You’ve been invited. Add your name and tap Join.'}}}
+{const h=(location.hash||'').slice(1);if(/^[a-z0-9]{3,6}$/i.test(h)){if(myName&&store.get('dab-seat-'+h.toLowerCase()))enter(h);else invited(h.toLowerCase())}}
 fbP.then(d=>{if(!d&&mode==='start'&&!$('startMsg').textContent)$('startMsg').textContent='Online play needs Firebase set up (see README). You can still try it on this device.'});
 </script>
 </body>
