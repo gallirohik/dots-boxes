@@ -49,9 +49,13 @@ These values are meant to be public. Anyone who opens the page can see them, and
 ## 3. Put it on GitHub Pages
  
 1. On GitHub, create a new public repository, for example `dots`.
-2. Upload `index.html` (and this README) to the repository.
+2. Upload `index.html` and `og.jpg` (and this README) to the repository.
 3. Open **Settings → Pages**. Set **Source** to *Deploy from a branch* and **Branch** to `main` with folder `/ (root)`, then save.
 4. After a minute or so, the game is live at `https://gallirohik.github.io/dots/`.
+### Link preview (WhatsApp, iMessage, etc.)
+`og.jpg` is the preview card that appears when you paste the link. The tags in `index.html` point to `https://gallirohik.github.io/dots/og.jpg`. If you name the repository something other than `dots`, replace `/dots/` with your repository name in the `og:` and `twitter:` tags near the top of `index.html`.
+WhatsApp caches previews. If you pasted the link before `og.jpg` was uploaded, add `?v=2` to the end of the link to get a fresh preview.
+ 
 ## 4. Play
  
 1. Open the link, type your name, and tap **Start a game**.
