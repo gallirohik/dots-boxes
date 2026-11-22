@@ -1,13 +1,14 @@
 # Dots & Boxes: How well I want to know you
- 
+
 A two-player dots and boxes game (4 to 7 dots per side). The winner asks the loser one question, and every answer is saved for both players.
 It is one static `index.html`, hosted on GitHub Pages. Moves sync through Firebase Realtime Database (free tier). No login is needed.
- 
+
 ## 1. Create the Firebase database (about 5 minutes)
- 
+
 1. Go to https://console.firebase.google.com and click **Add project** (Google Analytics is not needed).
 2. In the left menu, open **Build → Realtime Database → Create database**. Pick a location (for India, `asia-southeast1` is closest) and start in **locked mode**.
 3. Open the **Rules** tab, paste the rules below, and click **Publish**:
+
 ```json
 {
   "rules": {
@@ -27,15 +28,16 @@ It is one static `index.html`, hosted on GitHub Pages. Moves sync through Fireba
   }
 }
 ```
- 
+
 4. Go to **Project settings (gear icon) → General → Your apps → Web (`</>`)**. Register an app with any nickname; hosting is not needed.
 5. Copy the `firebaseConfig` values it shows you.
+
 ## 2. Add the config to the game
- 
-Open `index.html`, find `FIREBASE_CONFIG` near the top of the script, and fill it in:
- 
+
+Open `config.js` and fill in the values. This is the only file you ever edit; `index.html` loads it automatically.
+
 ```js
-const FIREBASE_CONFIG = {
+export const FIREBASE_CONFIG = {
   apiKey: "AIza...",
   authDomain: "your-project.firebaseapp.com",
   databaseURL: "https://your-project-default-rtdb.asia-southeast1.firebasedatabase.app",
@@ -43,27 +45,28 @@ const FIREBASE_CONFIG = {
   appId: "1:...:web:..."
 };
 ```
- 
-These values are meant to be public. Anyone who opens the page can see them, and that's fine: the rules above control what can be read and written.
- 
+
+These values are meant to be public. Anyone who opens the page can see them, and that's fine: the rules above control what can be read and written. When you get an updated `index.html`, just replace that file and leave `config.js` alone.
+
 ## 3. Put it on GitHub Pages
- 
+
 1. On GitHub, create a new public repository, for example `dots`.
-2. Upload `index.html` and `og.jpg` (and this README) to the repository.
+2. Upload `index.html`, `config.js`, `og.jpg`, `favicon.svg`, `favicon-32.png` and `apple-touch-icon.png` (and this README) to the repository.
 3. Open **Settings → Pages**. Set **Source** to *Deploy from a branch* and **Branch** to `main` with folder `/ (root)`, then save.
 4. After a minute or so, the game is live at `https://gallirohik.github.io/dots/`.
+
 ### Link preview (WhatsApp, iMessage, etc.)
 `og.jpg` is the preview card that appears when you paste the link. The tags in `index.html` point to `https://gallirohik.github.io/dots/og.jpg`. If you name the repository something other than `dots`, replace `/dots/` with your repository name in the `og:` and `twitter:` tags near the top of `index.html`.
 WhatsApp caches previews. If you pasted the link before `og.jpg` was uploaded, add `?v=2` to the end of the link to get a fresh preview.
- 
+
 ## 4. Play
- 
+
 1. Open the link, type your name, and tap **Start a game**.
 2. Tap **Copy invite link** and send it to her. On a phone, this opens the share sheet.
 3. She opens the link, types her name, and taps **Join**. The game starts as soon as you're both in.
+
 ## Notes
- 
+
 - Anyone who has the game code can open that game. The code is 5 random letters, and there's no account system.
 - Each game code keeps its own record of answers. Rematches with the same code keep adding to it.
 - If someone refreshes or reconnects, they keep their seat, because each device remembers its player ID.
- 
