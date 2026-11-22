@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dots &amp; Boxes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* VOICE: quiet, warm, understated — a handwritten note, not a valentine
+   IDEA: a cream letter-paper game; the winner earns one question, sealed in an envelope
+   PICTURE: the board drawn in fine ink, framed by small single-line drawings (two cups, an envelope, a paper plane)
+   COLOUR and TYPE: ivory paper, soft ink, his muted blue vs her dusty blush, a gold hairline; Cormorant italic + Nunito
+   LAYOUT: one calm screen at a time — start, waiting room, game, answers — the question arrives as a bottom sheet */
+:root{color-scheme:light;
+ --bg:#fbf8f3;--card:#fffdf9;--ink:#2d2b33;--soft:#7d7884;--line:#ebe4da;--hair:#c9a978;--chip:#f5efe7;--dot:#3a3740;--slot:#eee8df;
+ --p1:#5a72b8;--p2:#c97890;--p1s:#eef1fa;--p2s:#f9ecef;--shadow:rgba(90,60,40,.08)}
+*{box-sizing:border-box;min-width:0}
+html,body{min-height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 Nunito,system-ui,sans-serif;overflow-x:clip;-webkit-tap-highlight-color:transparent;
+ background-image:radial-gradient(circle at 50% -10%,#fff 0,transparent 60%)}
+.app{position:relative;max-width:600px;margin:0 auto;padding:16px 18px 120px}
+.serif{font-family:'Cormorant Garamond',Georgia,serif}
+.hide{display:none!important}
+button,input,textarea{font:inherit;font-size:16px}
+button{min-height:50px;padding:10px 20px;border-radius:999px;border:0;background:var(--ink);color:var(--bg);font-weight:700;letter-spacing:.01em;cursor:pointer;transition:transform .1s,background .2s}
+button:active{transform:scale(.98)}
+button.soft{background:var(--chip);color:var(--ink)}
+button.blush{background:var(--p2);color:#fff}
+button.line{background:transparent;color:var(--ink);border:1px solid var(--line)}
+button.link{background:none;color:var(--soft);min-height:40px;padding:6px 6px;font-weight:600;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:4px}
+button:disabled{opacity:.4;cursor:default}
+input,textarea{width:100%;min-height:52px;padding:12px 16px;border-radius:16px;border:1px solid var(--line);background:#fff;color:var(--ink)}
+input::placeholder,textarea::placeholder{color:#aaa3ad}
+input:focus,textarea:focus{border-color:var(--hair);outline:none;box-shadow:0 0 0 4px rgba(201,169,120,.15)}
+textarea{min-height:100px;resize:none;line-height:1.45}
+:focus-visible{outline:2px solid var(--hair);outline-offset:3px}
+label{display:block;font-weight:700;font-size:13px;color:var(--soft);margin:0 0 6px}
+.muted{color:var(--soft)}.small{font-size:14px}
+.ill{display:block;margin:0 auto;overflow:visible}
+.ill .s:not([fill]){fill:none}
+.ill .s{stroke:var(--ink);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.ill .h{fill:none;stroke:var(--hair);stroke-width:1.4;stroke-linecap:round}
+
+/* top */
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 18px;min-height:44px}
+.brand{font:italic 600 24px/1 'Cormorant Garamond',Georgia,serif;margin:0;display:flex;align-items:center;gap:8px;white-space:nowrap}
+.brand svg{width:22px;height:22px;flex:none}
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line)}
+.tabs button{min-height:40px;padding:6px 12px;border-radius:0;background:none;color:var(--soft);font-size:14px;font-weight:700;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
+.tabs button.on{color:var(--ink);border-bottom-color:var(--ink)}
+.dotnew{width:7px;height:7px;border-radius:50%;background:var(--p2)}
+
+/* start / waiting */
+.hero{text-align:center;padding:10px 0 4px}
+.hero h1{font:italic 600 clamp(40px,10vw,54px)/1.02 'Cormorant Garamond',Georgia,serif;margin:4px 0 10px;text-wrap:balance}
+.hero p{margin:0 auto;max-width:32ch;color:var(--soft)}
+.hero .ill{width:min(300px,86%);margin:18px auto 22px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:22px;display:grid;gap:14px;box-shadow:0 20px 40px -32px var(--shadow)}
+.or{display:flex;align-items:center;gap:12px;color:var(--soft);font-size:13px}.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.join{display:flex;gap:8px}
+.join input.code-in{text-transform:uppercase;letter-spacing:.2em;font-weight:700;text-align:center}
+.msg{color:var(--p2);font-size:14px;margin:0;min-height:1.2em;text-align:center}
+.code{font:600 clamp(46px,13vw,60px)/1 'Cormorant Garamond',Georgia,serif;letter-spacing:.18em;text-align:center;margin:0;padding-left:.18em}
+.waiting{display:flex;align-items:center;justify-content:center;gap:10px;color:var(--soft);margin:0;font-size:15px}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--p2);animation:pulse 1.6s infinite}
+@keyframes pulse{50%{opacity:.2}}
+.divider{height:1px;background:var(--line);margin:4px 0}
+
+/* game */
+.score{display:grid;grid-template-columns:1fr auto 1fr;align-items:end;gap:12px;margin:0 0 4px}
+.pl{display:grid;gap:2px}
+.pl.r{text-align:right}
+.pl .nm{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:flex;align-items:center;gap:8px}
+.pl.r .nm{justify-content:flex-end}
+.pl .sw{width:10px;height:10px;border-radius:50%;flex:none}
+.c1 .sw{background:var(--p1)}.c2 .sw{background:var(--p2)}
+.pl .pts{font:600 46px/1 'Cormorant Garamond',Georgia,serif}
+.c1 .pts{color:var(--p1)}.c2 .pts{color:var(--p2)}
+.pl .tg{font-size:12px;color:var(--soft);min-height:1.2em}
+.pl.on .tg{color:var(--ink);font-weight:700}
+.vs{font:italic 500 20px 'Cormorant Garamond',serif;color:var(--soft);padding-bottom:18px}
+.stake{display:flex;align-items:center;justify-content:center;gap:8px;margin:6px 0 12px;font:italic 500 19px/1.2 'Cormorant Garamond',serif;color:var(--soft);text-align:center}
+.stake svg{width:22px;height:16px;flex:none}
+.status{text-align:center;font:italic 600 26px/1.2 'Cormorant Garamond',serif;margin:0 0 10px;min-height:1.2em}
+.c1t{color:var(--p1)}.c2t{color:var(--p2)}
+.boardwrap{background:var(--card);border:1px solid var(--line);border-radius:26px;padding:8px;box-shadow:0 30px 50px -40px var(--shadow)}
+#board{display:block;width:100%;height:auto;touch-action:manipulation;transition:opacity .25s}
+#board.locked{opacity:.55}
+.slot{fill:transparent;cursor:pointer}
+.slotline{stroke:var(--slot);stroke-linecap:round;pointer-events:none;transition:stroke .12s}
+.slot:hover+.slotline{stroke:var(--hover)}
+.drawn{stroke-linecap:round}
+.fresh{stroke-dasharray:100;stroke-dashoffset:100;animation:draw .35s ease-out forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.boxtxt{font-family:'Cormorant Garamond',Georgia,serif;font-style:italic;font-weight:600;text-anchor:middle;dominant-baseline:central}
+.meta{display:flex;justify-content:space-between;align-items:center;gap:8px;margin:14px 4px 0;font-size:14px;color:var(--soft);flex-wrap:wrap}
+
+/* reactions */
+.reacts{display:flex;justify-content:center;gap:2px;margin:14px auto 0;padding:5px;width:max-content;max-width:100%;background:var(--card);border:1px solid var(--line);border-radius:999px;box-shadow:0 14px 30px -24px var(--shadow)}
+.reacts button{width:46px;min-height:46px;padding:0;border-radius:50%;background:transparent;font-size:22px;line-height:1;color:inherit;transition:transform .15s,background .15s}
+.reacts button:hover{background:var(--chip);transform:translateY(-3px)}
+.reacts button:active{transform:scale(.9)}
+.floaters{position:fixed;inset:0;pointer-events:none;z-index:4;overflow:hidden}
+.fl{position:absolute;line-height:1;animation:float 2.6s cubic-bezier(.2,.7,.3,1) forwards;opacity:0}
+@keyframes float{0%{transform:translate(-50%,0) scale(.5);opacity:0}12%{opacity:1;transform:translate(-50%,-18px) scale(1.15)}30%{transform:translate(calc(-50% + var(--dx)*.4),-90px) scale(1)}100%{transform:translate(calc(-50% + var(--dx)),-340px) scale(1);opacity:0}}
+.pl.bump .pts{animation:bump .5s ease-out}@keyframes bump{40%{transform:scale(1.12)}}
+.reacts .more{font:500 24px/1 Nunito;color:var(--soft);border-left:1px solid var(--line);border-radius:0 999px 999px 0;margin-left:2px}
+.reacts .more[aria-expanded=true]{color:var(--ink);background:var(--chip)}
+.seg{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:var(--chip);border-radius:999px;padding:4px}
+.seg button{min-height:42px;padding:0;border-radius:999px;background:transparent;color:var(--soft);font:600 22px/1 'Cormorant Garamond',Georgia,serif}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:0 2px 8px -4px var(--shadow),0 0 0 1px var(--line)}
+.anyemoji{margin:10px auto 0;max-width:420px;background:var(--card);border:1px solid var(--line);border-radius:22px;padding:10px}
+.anyemoji input{text-align:center;font-size:22px;min-height:48px}
+.egrid{max-height:236px;overflow:auto;margin:0 0 10px;padding:0 2px}
+.egrid h4{font-size:12px;font-weight:800;color:var(--soft);margin:8px 6px 2px}
+.egrid .row{display:grid;grid-template-columns:repeat(auto-fill,minmax(44px,1fr))}
+.egrid button{min-height:44px;padding:0;border-radius:12px;background:transparent;font-size:24px;color:inherit}.egrid button:hover{background:var(--chip)}
+.recent{display:flex;flex-wrap:wrap;justify-content:center;gap:2px;margin:0 0 6px}.recent:empty{display:none}
+.recent button{width:44px;min-height:44px;padding:0;border-radius:50%;background:transparent;font-size:22px;color:inherit}.recent button:hover{background:var(--chip)}
+@media(max-width:380px){.reacts button{width:42px;min-height:42px;font-size:20px}}
+/* end card */
+.end{margin:16px 0 0;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:22px;text-align:center}
+.end .ill{width:150px;margin:0 auto 6px}
+.end h2{font:italic 600 34px/1.05 'Cormorant Garamond',serif;margin:0 0 4px}
+.end p{margin:0 0 14px;color:var(--soft)}
+.end .qa{text-align:left;margin:0 0 16px}
+.end .qa .q{color:var(--ink);margin:2px 0 8px}.end .qa .a{color:var(--ink);margin:0}.end .qa .who{margin:0}.end .qa .c1t{color:var(--p1)}.end .qa .c2t{color:var(--p2)}
+
+/* bottom sheet */
+.scrim{position:fixed;inset:0;background:rgba(45,40,50,.18);backdrop-filter:blur(2px);z-index:5}
+.sheet{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(600px,100%);max-height:90vh;overflow:auto;z-index:6;
+ background:var(--card);border-radius:28px 28px 0 0;padding:10px 22px calc(24px + env(safe-area-inset-bottom));box-shadow:0 -24px 60px -30px rgba(60,40,40,.35);animation:up .3s ease-out}
+.grab{width:40px;height:4px;border-radius:9px;background:var(--line);margin:0 auto 14px}
+@keyframes up{from{transform:translate(-50%,30px);opacity:0}}
+.sheet .ill{width:72px;margin:0 0 10px}
+.kicker{font-size:13px;font-weight:700;margin:0 0 2px;color:var(--acc)}
+.bigq{font:italic 600 clamp(28px,7.4vw,34px)/1.12 'Cormorant Garamond',serif;margin:0 0 16px;overflow-wrap:anywhere}
+.chips{display:grid;gap:8px;margin:0 0 14px}
+.chip{display:block;width:100%;min-height:50px;text-align:left;background:var(--chip);color:var(--ink);border:1px solid transparent;border-radius:16px;font-weight:600;padding:12px 16px}
+.chip:hover{border-color:var(--hair)}
+.sec{font-size:12px;font-weight:800;letter-spacing:.02em;color:var(--soft);margin:4px 0 8px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}.actions>*{flex:1 1 140px}
+.sheet .acc{background:var(--acc);color:#fff}
+
+/* answers */
+.qa{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px 18px;margin:0 0 10px}
+.qa .who{font-size:12px;font-weight:800;margin:0}
+.qa .q{font-weight:700;margin:2px 0 8px}
+.qa .a{font:italic 500 24px/1.25 'Cormorant Garamond',serif;margin:0;overflow-wrap:anywhere;white-space:pre-wrap;border-left:2px solid var(--hair);padding-left:12px}
+.qa .a.sk{color:var(--soft);font-size:20px}
+.tally{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:0 0 16px}
+.tally div{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:12px 8px;text-align:center}
+.tally b{display:block;font:600 36px/1 'Cormorant Garamond',serif}
+.tally span{font-size:12px;color:var(--soft);font-weight:700}
+.game{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:14px 16px;margin:0 0 10px}
+.ghead{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.gnum{font-size:12px;font-weight:800;color:var(--soft)}
+.gres{font:italic 600 22px/1.2 'Cormorant Garamond',serif;margin:2px 0 0}
+.gscore{font:600 26px/1 'Cormorant Garamond',serif;white-space:nowrap}
+.game .qa{border:0;padding:10px 0 0;margin:10px 0 0;border-top:1px dashed var(--line);border-radius:0;background:none}
+.game .top2{display:flex;gap:14px;align-items:center}
+.minib{flex:none;padding:0;min-height:0;border-radius:14px;background:none;cursor:zoom-in}
+.mini{display:block;flex:none;width:84px;height:84px;background:var(--bg);border:1px solid var(--line);border-radius:14px}
+.game .top2 .ghead{flex:1}
+.rx{margin:10px 0 0;padding-top:10px;border-top:1px dashed var(--line)}
+.rx .lbl{display:flex;justify-content:space-between;gap:8px;font-size:12px;font-weight:800;color:var(--soft);margin:0 0 6px}
+.rx .lbl span{display:inline-flex;align-items:center;gap:5px;font-weight:700}
+.rx .lbl i{width:7px;height:7px;border-radius:50%;display:inline-block}
+.tip{position:fixed;z-index:9;max-width:240px;padding:8px 12px;border-radius:12px;background:var(--ink);color:var(--bg);font-size:13px;font-weight:700;line-height:1.35;pointer-events:none;transform:translate(-50%,calc(-100% - 10px));box-shadow:0 10px 24px -12px rgba(0,0,0,.5);animation:tipin .15s ease-out}
+.tip::after{content:"";position:absolute;left:50%;bottom:-5px;width:10px;height:10px;margin-left:-5px;background:var(--ink);transform:rotate(45deg);border-radius:2px}
+@keyframes tipin{from{opacity:0;transform:translate(-50%,calc(-100% - 4px))}}
+[data-tip]{cursor:default}[data-tip].tipon{outline:2px solid var(--hair);outline-offset:1px}
+.rsum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:0 0 10px}
+.rsum span{position:relative;display:flex;align-items:center;justify-content:center;gap:6px;padding:8px 6px 11px;border-radius:14px;background:var(--chip);overflow:hidden}
+.rsum em{font-style:normal;font-size:20px;line-height:1}.rsum b{font-size:14px}
+.rsum i{position:absolute;left:10px;right:10px;bottom:4px;height:3px;border-radius:3px;background:linear-gradient(90deg,var(--p1) 0 var(--a),var(--p2) var(--a) 100%)}
+.rsum .more2{font-size:13px;font-weight:700;color:var(--soft)}
+.rtl summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--soft);margin:0 0 6px;list-style:none}
+.rtl summary::-webkit-details-marker{display:none}
+.rtl summary::after{content:" ▾"}.rtl[open] summary::after{content:" ▴"}
+.rxmore{min-height:40px;font-size:13px}
+.rxs{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:4px}
+.rxs .rxmore{grid-column:1/-1;justify-self:center}
+@media(max-width:420px){.rxs{grid-template-columns:repeat(7,minmax(0,1fr))}}
+.rxs span{position:relative;display:grid;place-items:center;aspect-ratio:1/1.05;font-size:22px;line-height:1;border-radius:12px;background:var(--chip)}
+.rxs span::after{content:"";position:absolute;bottom:4px;left:50%;width:14px;height:3px;margin-left:-7px;border-radius:3px;background:var(--c)}
+.anshead{font:italic 600 32px/1.1 'Cormorant Garamond',serif;margin:6px 2px 4px}
+.empty{text-align:center;padding:30px 10px;color:var(--soft)}
+.empty .ill{width:180px;margin:0 auto 14px}
+.empty b{display:block;font:italic 600 26px 'Cormorant Garamond',serif;color:var(--ink)}
+
+/* my questions */
+.mylist{display:grid;gap:8px;margin:4px 0 0;padding:0;list-style:none}
+.mylist li{display:flex;align-items:center;gap:8px;background:var(--chip);border-radius:16px;padding:6px 6px 6px 16px}
+.mylist li span{flex:1;font-weight:600;font-size:15px}
+.mylist li.used span{color:var(--soft);text-decoration:line-through}
+.mylist button{min-height:38px;padding:4px 12px;font-size:13px}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}.fresh{stroke-dashoffset:0}}
+</style>
+</head>
+<body>
+<div class="app">
+ <div class="top">
+  <p class="brand"><svg viewBox="0 0 22 22" aria-hidden="true"><g fill="var(--dot)"><circle cx="4" cy="4" r="2"/><circle cx="18" cy="4" r="2"/><circle cx="4" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></g><path d="M4 4h14M4 4v14" stroke="var(--p1)" stroke-width="1.8" stroke-linecap="round"/><path d="M18 4v14M4 18h14" stroke="var(--p2)" stroke-width="1.8" stroke-linecap="round"/></svg>Dots &amp; Boxes</p>
+  <div class="tabs hide" id="tabs" role="tablist">
+   <button role="tab" id="tabPlay" class="on">Play</button>
+   <button role="tab" id="tabAns">Our games<span class="dotnew hide" id="ansDot"></span></button>
+  </div>
+ </div>
+
+ <!-- START -->
+ <section id="vStart">
+  <div class="hero">
+   <svg class="ill" viewBox="0 0 300 170" aria-hidden="true">
+    <!-- two cups, steam meeting softly -->
+    <path class="h" d="M20 150h260"/>
+    <path class="s" d="M84 92h58l-6 46a7 7 0 0 1-7 6H97a7 7 0 0 1-7-6z" fill="var(--p1s)"/>
+    <path class="s" d="M142 102c15 0 15 24-1 24"/>
+    <path class="s" d="M72 150c8-3 74-3 82 0"/>
+    <path class="s" d="M158 92h58l-6 46a7 7 0 0 1-7 6h-32a7 7 0 0 1-7-6z" fill="var(--p2s)"/>
+    <path class="s" d="M158 102c-15 0-15 24 1 24"/>
+    <path class="s" d="M146 150c8-3 74-3 82 0"/>
+    <path d="M110 82c-6-10 6-16 0-26s4-18 14-20c10-1 18 6 21 14" fill="none" stroke="var(--p1)" stroke-width="1.6" stroke-linecap="round" opacity=".75"/>
+    <path d="M190 82c6-10-6-16 0-26s-4-18-14-20c-10-1-18 6-21 14" fill="none" stroke="var(--p2)" stroke-width="1.6" stroke-linecap="round" opacity=".75"/>
+    <path d="M150 52c-2-6-10-6-10 1 0 5 10 10 10 10s10-5 10-10c0-7-8-7-10-1z" fill="var(--p2)" opacity=".85"/>
+    <!-- a tiny dots-and-boxes doodle on the table -->
+    <g fill="var(--dot)"><circle cx="246" cy="126" r="2"/><circle cx="264" cy="126" r="2"/><circle cx="246" cy="144" r="2"/><circle cx="264" cy="144" r="2"/><circle cx="36" cy="126" r="2"/><circle cx="54" cy="126" r="2"/><circle cx="36" cy="144" r="2"/><circle cx="54" cy="144" r="2"/></g>
+    <path d="M246 126h18v18" fill="none" stroke="var(--p2)" stroke-width="1.6" stroke-linecap="round"/><path d="M36 126v18h18" fill="none" stroke="var(--p1)" stroke-width="1.6" stroke-linecap="round"/>
+    <path class="h" d="M60 40l2 5 5 2-5 2-2 5-2-5-5-2 5-2zM240 30l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5z"/>
+   </svg>
+   <h1>How well I want to know you</h1>
+   <p>A quiet little game for two. Whoever wins gets to ask the other one question.</p>
+  </div>
+  <div class="panel" style="margin-top:22px">
+   <div><label for="myname">Your name</label><input id="myname" maxlength="16" placeholder="How she'll see you" autocomplete="given-name"></div>
+   <div><label>Dots per side</label><div class="seg" id="segStart" role="radiogroup" aria-label="Dots per side"><button data-d="4">4</button><button data-d="5">5</button><button data-d="6">6</button><button data-d="7">7</button></div><p class="muted small segcap" style="margin:6px 0 0;text-align:center"></p></div>
+   <button id="create">Start a game</button>
+   <div class="or">or join with a code</div>
+   <div class="join"><input id="codein" class="code-in" maxlength="6" placeholder="CODE" autocapitalize="characters" aria-label="Game code"><button class="soft" id="joinb">Join</button></div>
+   <p class="msg" id="startMsg">Connecting…</p>
+  </div>
+  <p style="text-align:center;margin:12px 0 0"><button class="link" id="local">Try it on this device first</button></p>
+ </section>
+
+ <!-- WAITING -->
+ <section id="vWait" class="hide">
+  <div class="panel" style="text-align:center">
+   <svg class="ill" viewBox="0 0 240 90" style="width:200px" aria-hidden="true">
+    <path d="M14 70c30 8 50-22 80-14s30 26 56 12" fill="none" stroke="var(--hair)" stroke-width="1.4" stroke-dasharray="1 7" stroke-linecap="round"/>
+    <path class="s" d="M150 58l76-44-30 66-14-18z" fill="var(--p2s)"/><path class="s" d="M150 58l76-44-44 26z" fill="#fff"/><path class="s" d="M182 62l-0-22"/>
+    <path d="M20 66c-2-5-8-5-8 1 0 4 8 8 8 8s8-4 8-8c0-6-6-6-8-1z" fill="var(--p2)" opacity=".8"/>
+   </svg>
+   <p class="muted small" style="margin:0">Send her this code</p>
+   <p class="code" id="codeout">-----</p>
+   <label for="invite" style="text-align:left;margin:0">Her invite link</label><input id="invite" readonly style="font-size:14px;text-align:center">
+   <button class="blush" id="copy">Copy invite link</button>
+   <p class="muted small hide" id="copyHelp" style="margin:0">Your browser blocked copying here. The link above is selected — long-press or right-click it to copy.</p>
+   <p class="waiting"><span class="pulse" id="waitPulse"></span><span id="waitTxt">Waiting for her to join</span></p>
+  </div>
+  <div class="panel" style="margin-top:14px">
+   <div><p class="serif" style="font:italic 600 26px/1.1 'Cormorant Garamond',serif;margin:0">While you wait</p><p class="muted small" style="margin:4px 0 0">Write the things you'd like to ask her. Only you see these; if you win, you pick one.</p></div>
+   <div class="join"><input id="qin2" maxlength="140" placeholder="Something you'd like to know…"><button class="soft" id="qadd2">Add</button></div>
+   <ul class="mylist" id="mylist2"></ul>
+  </div>
+  <p style="text-align:center;margin:12px 0 0"><button class="link" id="leave2">Cancel</button></p>
+ </section>
+
+ <!-- GAME -->
+ <section id="vGame" class="hide">
+  <div class="score">
+   <div class="pl c1" id="pl1"><div class="nm"><span class="sw"></span><span id="n1"></span></div><div class="pts" id="s1">0</div><div class="tg" id="t1"></div></div>
+   <div class="vs">and</div>
+   <div class="pl c2 r" id="pl2"><div class="nm"><span id="n2"></span><span class="sw"></span></div><div class="pts" id="s2">0</div><div class="tg" id="t2"></div></div>
+  </div>
+  <p class="stake" id="stake"><svg viewBox="0 0 22 16" aria-hidden="true"><rect x="1" y="1" width="20" height="14" rx="2.5" fill="none" stroke="var(--hair)" stroke-width="1.3"/><path d="M2 2.5l9 6.5 9-6.5" fill="none" stroke="var(--hair)" stroke-width="1.3" stroke-linejoin="round"/></svg>The winner asks one question</p>
+  <p class="status" id="status" aria-live="polite"></p>
+  <div class="boardwrap"><svg id="board" viewBox="0 0 600 600" role="img" aria-label="Game board"></svg></div>
+  <div class="reacts" id="reacts" role="group" aria-label="Send a reaction"><button data-e="😄" aria-label="Laugh">😄</button><button data-e="🙈" aria-label="Shy">🙈</button><button data-e="😏" aria-label="Smirk">😏</button><button data-e="😮" aria-label="Surprised">😮</button><button data-e="👏" aria-label="Clap">👏</button><button data-e="🤍" aria-label="Heart">🤍</button><button id="moreE" class="more" aria-label="Any emoji" aria-expanded="false">+</button></div>
+  <div class="anyemoji hide" id="anyE"><div class="recent" id="recentE"></div><div class="egrid" id="egrid"></div><div class="join"><input id="emojiIn" maxlength="16" placeholder="Any emoji…" aria-label="Type any emoji" inputmode="text" autocomplete="off"><button class="soft" id="emojiSend">Send</button></div><p class="muted small" id="emojiHelp" style="margin:6px 0 0;text-align:center">Or type any emoji from your keyboard</p></div>
+  <div class="end hide" id="end">
+   <svg class="ill" viewBox="0 0 150 80" aria-hidden="true">
+    <g transform="rotate(-12 55 50)"><path class="s" d="M38 28h34l-4 36a5 5 0 0 1-5 4H47a5 5 0 0 1-5-4z" fill="var(--p1s)"/></g>
+    <g transform="rotate(12 95 50)"><path class="s" d="M78 28h34l-4 36a5 5 0 0 1-5 4H87a5 5 0 0 1-5-4z" fill="var(--p2s)"/></g>
+    <path class="h" d="M75 4l1.5 4 4 1.5-4 1.5-1.5 4-1.5-4-4-1.5 4-1.5zM66 18l-4-5M84 18l4-5"/>
+   </svg>
+   <h2 id="endT"></h2><p id="endS"></p>
+   <div id="endQA"></div>
+   <div id="endSize" style="margin:0 0 14px;text-align:left"><div><label>Dots per side</label><div class="seg" id="segEnd" role="radiogroup" aria-label="Dots per side"><button data-d="4">4</button><button data-d="5">5</button><button data-d="6">6</button><button data-d="7">7</button></div><p class="muted small segcap" style="margin:6px 0 0;text-align:center"></p></div></div>
+   <button id="again" style="width:100%">Play another</button>
+  </div>
+  <div class="meta"><span id="series"></span><span><button class="link" id="myqBtn">My questions</button> <button class="link" id="leave">Leave</button></span></div>
+ </section>
+
+ <!-- ANSWERS -->
+ <section id="vAns" class="hide"><div id="journal"></div></section>
+</div>
+
+<div class="floaters" id="floaters" aria-hidden="true"></div>
+<div class="tip hide" id="tip" role="tooltip"></div>
+<div class="scrim hide" id="scrim"></div>
+<div class="sheet hide" id="sheet" role="dialog" aria-modal="true" aria-live="polite"></div>
+
+<script type="module">
+/* ============================================================
+   1. Paste your Firebase web config here (see README.md)
+   ============================================================ */
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyCjKxH76KX_KTekfE-Gw0XVGJlhsSDnWAc",
+  authDomain: "dotsboxes-38181.firebaseapp.com",
+  databaseURL: "https://dotsboxes-38181-default-rtdb.asia-southeast1.firebasedatabase.app",
+  projectId: "dotsboxes-38181",
+  storageBucket: "dotsboxes-38181.firebasestorage.app",
+  messagingSenderId: "994797509983",
+  appId: "1:994797509983:web:32be9fb439185bce192aea"
+};
+/* ============================================================ */
+
+const $=id=>document.getElementById(id);
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ENV=`<svg class="ill" viewBox="0 0 72 52" aria-hidden="true"><rect x="3" y="6" width="66" height="42" rx="6" fill="var(--accs)" stroke="var(--ink)" stroke-width="1.6"/><path d="M5 9l31 22 31-22" fill="none" stroke="var(--ink)" stroke-width="1.6" stroke-linejoin="round"/><path d="M36 33c-2-5-9-5-9 1 0 4 9 9 9 9s9-5 9-9c0-6-7-6-9-1z" fill="var(--acc)"/></svg>`;
+const NB=`<svg class="ill" viewBox="0 0 180 110" aria-hidden="true"><path d="M90 20c-24-9-50-9-74-1v80c24-8 50-8 74 1z" fill="#fff" stroke="var(--ink)" stroke-width="1.6" stroke-linejoin="round"/><path d="M90 20c24-9 50-9 74-1v80c-24-8-50-8-74 1z" fill="#fff" stroke="var(--ink)" stroke-width="1.6" stroke-linejoin="round"/><path d="M90 20v80" stroke="var(--ink)" stroke-width="1.6"/><g stroke="var(--line)" stroke-width="1.6" stroke-linecap="round"><path d="M28 42c18-5 36-5 52 1M28 56c18-5 36-5 52 1M28 70c18-5 36-5 52 1M100 43c18-6 36-6 52-1M100 57c18-6 36-6 52-1"/></g><path d="M126 80c-2-6-10-6-10 1 0 5 10 10 10 10s10-5 10-10c0-7-8-7-10-1z" fill="var(--p2)" opacity=".8"/></svg>`;
+const IDEAS=["What's something you're quietly proud of?","What does a perfect day look like for you?","What's a small thing that always makes you happy?","What were you like as a kid?","What's a dream you haven't told many people?","Where do you feel most like yourself?","What made you laugh hardest recently?","What do you value most in the people close to you?","What's a food that tastes like home?","What's one thing you'd love to do this year?","What's something people often get wrong about you?","What's a memory you'd happily live again?","How do you like to spend a slow evening?","What's been on your mind lately?"];
+let dots=Math.min(7,Math.max(4,+store.get('dab-dots')||5));
+const SIZES=[3,4,5,6];
+const fresh=(o={})=>{const n=o.n||dots-1;return {g:Date.now(),u:0,q:0,n,h:'0'.repeat((n+1)*n),v:'0'.repeat(n*(n+1)),b:'0'.repeat(n*n),t:o.t||1,l:'',w:o.w||[0,0],c:null,gn:o.gn||1}};
+const CAP={4:'Quick — 9 boxes',5:'Classic — 16 boxes',6:'Longer — 25 boxes',7:'Long game — 36 boxes'};
+function renderSeg(){for(const id of['segStart','segEnd']){const el=$(id);if(!el)continue;el.querySelectorAll('[data-d]').forEach(b=>{const on=+b.dataset.d===dots;b.classList.toggle('on',on);b.setAttribute('aria-checked',on)});el.parentElement.querySelector('.segcap').textContent=CAP[dots]}}
+function pickDots(d){dots=Math.min(7,Math.max(4,d|0));store.set('dab-dots',String(dots));renderSeg()}
+
+let S=fresh();
+let mode='start',tab='play',code='',seat=0,players={},myName=store.get('dab-name')||'';
+let lastDrawn='',sheetKey='',myqOpen=false,unread=false;
+let myId=store.get('dab-id');if(!myId){myId=Math.random().toString(36).slice(2,12);store.set('dab-id',myId)}
+let myQs=[];try{myQs=JSON.parse(store.get('dab-qs')||'[]').filter(x=>typeof x==='string').slice(0,30)}catch(e){}
+let used=new Set();try{used=new Set(JSON.parse(store.get('dab-used')||'[]'))}catch(e){}
+let rlog={},journal=[],results=[],localSeen=new Set(),unsubs=[];
+$('myname').value=myName;
+
+/* ---------- Firebase ---------- */
+let db=null,F=null;
+const fbP=(async()=>{
+ if(!FIREBASE_CONFIG.databaseURL)return null;
+ const app=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js');
+ F=await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js');
+ db=F.getDatabase(app.initializeApp(FIREBASE_CONFIG));return db;
+})().catch(e=>{console.error(e);return null});
+const online=()=>mode==='online'&&!!db&&!!seat;
+const gpath=p=>`games/${code}${p?'/'+p:''}`;
+
+/* ---------- game rules ---------- */
+const set=(s,i,ch)=>s.slice(0,i)+ch+s.slice(i+1);
+const boxDone=(st,r,c)=>{const n=st.n;return st.h[r*n+c]!=='0'&&st.h[(r+1)*n+c]!=='0'&&st.v[r*(n+1)+c]!=='0'&&st.v[r*(n+1)+c+1]!=='0'};
+const score=(st,p)=>{let s=0;for(const ch of st.b)if(ch==String(p))s++;return s};
+const over=st=>!st.b.includes('0');
+const winnerOf=st=>{const a=score(st,1),b=score(st,2);return a===b?0:(a>b?1:2)};
+const other=p=>p===1?2:1;
+const pname=p=>players[p]&&players[p].name?String(players[p].name).slice(0,16):'';
+function nm(p){if(mode==='online'){if(p===seat)return myName||'You';return pname(p)||(seat?'Her':'Player '+p)}return p===1?(myName||'Player 1'):'Player 2'}
+const label=p=>mode==='online'&&p===seat?'You':nm(p);
+const canAct=p=>mode!=='online'||seat===p;
+const pending=()=>S.c&&(S.c.s==='ask'||S.c.s==='wait');
+const bothIn=()=>!!(players[1]&&players[2]);
+
+function commit(st){
+ st.u=(S.u||0)+1;S=st;render(true);
+ if(online()){const want=st;F.runTransaction(F.ref(db,gpath('state')),cur=>(!cur||cur.g!==want.g||cur.u===want.u-1||cur.u<want.u)?want:undefined).catch(()=>{})}
+}
+function play(t,i){
+ if(over(S)||pending())return;
+ if(mode==='online'&&(S.t!==seat||!bothIn()))return;
+ if(S[t][i]!=='0')return;
+ const n=S.n,p=String(S.t),st={...S};st[t]=set(st[t],i,p);
+ const cand=[];
+ if(t==='h'){const r=Math.floor(i/n),c=i%n;if(r>0)cand.push([r-1,c]);if(r<n)cand.push([r,c])}
+ else{const r=Math.floor(i/(n+1)),c=i%(n+1);if(c>0)cand.push([r,c-1]);if(c<n)cand.push([r,c])}
+ let got=0;for(const[r,c]of cand){if(st.b[r*n+c]==='0'&&boxDone(st,r,c)){st.b=set(st.b,r*n+c,p);got++}}
+ if(!got)st.t=other(S.t);
+ st.q=S.q+1;st.l=t+i;
+ if(over(st)){const w=winnerOf(st);if(w){st.w=[...st.w];st.w[w-1]++;st.c={id:st.g+'-q',from:w,s:'ask',q:'',a:''}}recordResult(st)}
+ try{navigator.vibrate&&navigator.vibrate(got?[15,30,15]:8)}catch(e){}
+ commit(st);
+}
+function ask(text){text=String(text||'').trim().slice(0,140);if(!text||!S.c||S.c.s!=='ask')return;
+ used.add(text);store.set('dab-used',JSON.stringify([...used].slice(-200)));commit({...S,c:{...S.c,q:text,s:'wait'}})}
+function answer(text,skip){if(!S.c||S.c.s!=='wait')return;text=String(text||'').trim().slice(0,280);if(!skip&&!text)return;
+ const c={...S.c,a:skip?'':text,s:skip?'skip':'done'};
+ const entry={id:c.id,fs:c.from,from:nm(c.from),to:nm(other(c.from)),q:c.q,a:c.a,skip:!!skip,t:Date.now()};
+ if(online())F.set(F.ref(db,gpath('answers/'+c.id)),entry).catch(()=>{});
+ else{journal.push(entry);saveLocal()}
+ commit({...S,c});
+}
+const jKey='dab-j-local',rKey='dab-r-local',xKey='dab-x-local';
+function loadLocal(){try{rlog=JSON.parse(store.get(xKey)||'{}')||{}}catch(e){rlog={}}try{journal=JSON.parse(store.get(jKey)||'[]').slice(-200)}catch(e){journal=[]}try{results=JSON.parse(store.get(rKey)||'[]').slice(-300)}catch(e){results=[]}}
+const saveLocal=()=>{store.set(jKey,JSON.stringify(journal.slice(-200)));store.set(rKey,JSON.stringify(results.slice(-300)))};
+function recordResult(st){const s1=score(st,1),s2=score(st,2);
+ const r={id:String(st.g),gn:st.gn||1,n:st.n,s1,s2,w:winnerOf(st),p1:nm(1),p2:nm(2),t:Date.now(),h:st.h,v:st.v,b:st.b};
+ if(online())F.set(F.ref(db,gpath('results/'+st.g)),r).catch(()=>{});
+ else{results=results.filter(x=>x.id!==r.id).concat(r);saveLocal()}}
+
+/* ---------- sheet ---------- */
+function openSheet(html,acc,art=true){const sh=$('sheet');sh.style.setProperty('--acc',acc);sh.style.setProperty('--accs',acc==='var(--p1)'?'var(--p1s)':'var(--p2s)');
+ sh.innerHTML='<div class="grab"></div>'+(art?ENV:'')+html;sh.classList.remove('hide');$('scrim').classList.remove('hide')}
+function closeSheet(){$('sheet').classList.add('hide');$('scrim').classList.add('hide');$('sheet').innerHTML=''}
+function renderSheet(){
+ if(myqOpen){sheetMyQs();return}
+ const c=S.c;
+ if(!c||c.s==='done'||c.s==='skip'){closeSheet();return}
+ const asker=c.from,ans=other(asker),accA=`var(--p${asker})`,accB=`var(--p${ans})`;
+ if(c.s==='ask'){
+  if(canAct(asker)){
+   const mine=myQs.filter(q=>!used.has(q)),ideas=IDEAS.filter(q=>!used.has(q)&&!mine.includes(q)).sort(()=>Math.random()-.5).slice(0,mine.length?2:4);
+   openSheet(`<p class="kicker">${mode==='online'?'You won':esc(nm(asker))+' won'}</p><p class="bigq">Ask ${esc(nm(ans))} one thing</p>
+    ${mine.length?`<p class="sec">Your questions</p><div class="chips">${mine.slice(0,4).map(q=>`<button class="chip" data-ask="${esc(q)}">${esc(q)}</button>`).join('')}</div>`:''}
+    <p class="sec">${mine.length?'Or one of these':'A few ideas'}</p><div class="chips">${ideas.map(q=>`<button class="chip" data-ask="${esc(q)}">${esc(q)}</button>`).join('')}</div>
+    <p class="sec">Or in your own words</p><div class="join"><input id="askin" maxlength="140" placeholder="Your question…"><button class="acc" id="askb">Ask</button></div>`,accA);
+  }else openSheet(`<p class="kicker">${esc(nm(asker))} won this one</p><p class="bigq">…and is choosing a question for you</p><p class="waiting" style="justify-content:flex-start"><span class="pulse"></span>Just a moment</p>`,accA);
+ }else if(c.s==='wait'){
+  if(canAct(ans)){
+   openSheet(`<p class="kicker">${esc(nm(asker))} would like to know</p><p class="bigq">${esc(c.q)}</p>
+    <textarea id="ansin" maxlength="280" placeholder="Take your time…" aria-label="Your answer"></textarea>
+    <div class="actions" style="margin-top:10px"><button class="acc" id="ansb">Send</button><button class="line" id="skipb">Maybe another time</button></div>`,accB);
+  }else openSheet(`<p class="kicker">You asked ${esc(nm(ans))}</p><p class="bigq">${esc(c.q)}</p><p class="waiting" style="justify-content:flex-start"><span class="pulse"></span>${esc(nm(ans))} is writing…</p>`,accA);
+ }
+ const sh=$('sheet');
+ sh.querySelectorAll('[data-ask]').forEach(b=>b.addEventListener('click',()=>ask(b.dataset.ask)));
+ const ai=$('askin');if(ai){$('askb').addEventListener('click',()=>ask(ai.value));ai.addEventListener('keydown',e=>{if(e.key==='Enter')ask(ai.value)})}
+ const an=$('ansin');if(an){$('ansb').addEventListener('click',()=>answer(an.value));$('skipb').addEventListener('click',()=>answer('',true))}
+}
+function sheetMyQs(){
+ openSheet(`<p class="bigq" style="margin-bottom:4px">My questions</p><p class="muted small" style="margin:0 0 14px">Only you see these. If you win, they're offered first.</p>
+  <div class="join"><input id="qin" maxlength="140" placeholder="Something you'd like to know…"><button class="soft" id="qadd">Add</button></div>
+  <ul class="mylist" id="mylist" style="margin-top:12px"></ul><button class="line" id="closeq" style="width:100%;margin-top:16px">Done</button>`,'var(--p2)',false);
+ listInto($('mylist'));
+ const add=()=>{addQ($('qin').value);$('qin').value='';listInto($('mylist'))};
+ $('qadd').addEventListener('click',add);$('qin').addEventListener('keydown',e=>{if(e.key==='Enter')add()});
+ $('closeq').addEventListener('click',()=>{myqOpen=false;sheetKey='';render(false)});
+}
+function addQ(x){x=String(x||'').trim().slice(0,140);if(!x||myQs.includes(x))return;myQs.unshift(x);myQs=myQs.slice(0,30);store.set('dab-qs',JSON.stringify(myQs))}
+function listInto(ul){
+ ul.innerHTML=myQs.length?myQs.map((q,i)=>`<li class="${used.has(q)?'used':''}"><span>${esc(q)}</span><button class="line" data-del="${i}" aria-label="Remove question">Remove</button></li>`).join(''):'<li style="background:none;padding:0"><span class="muted small" style="font-weight:500">Nothing yet. Maybe: what she loves about her city, a song she keeps replaying, a place she dreams of.</span></li>';
+ ul.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>{myQs.splice(+b.dataset.del,1);store.set('dab-qs',JSON.stringify(myQs));listInto(ul)}));
+}
+
+/* ---------- render ---------- */
+function show(v){for(const id of['vStart','vWait','vGame','vAns'])$(id).classList.toggle('hide',id!==v)}
+function render(animate){
+ const inGame=mode==='local'||(mode==='online'&&bothIn()&&!!db);
+ if(mode==='start')show('vStart');
+ else if(!inGame){show('vWait');listInto($('mylist2'))}
+ else show(tab==='ans'?'vAns':'vGame');
+ $('tabs').classList.toggle('hide',!inGame);
+ $('tabPlay').classList.toggle('on',tab==='play');$('tabAns').classList.toggle('on',tab==='ans');
+ $('ansDot').classList.toggle('hide',!unread);
+ if(!inGame){closeSheet();sheetKey='';return}
+
+ const n=S.n,pad=54,cell=(600-pad*2)/n,svg=$('board');let o='';
+ for(let r=0;r<n;r++)for(let c=0;c<n;c++){const w=S.b[r*n+c];if(w!=='0'){const x=pad+c*cell,y=pad+r*cell;
+  o+=`<rect x="${x+7}" y="${y+7}" width="${cell-14}" height="${cell-14}" rx="10" fill="var(--p${w}s)"/><text class="boxtxt" x="${x+cell/2}" y="${y+cell/2+2}" fill="var(--p${w})" style="font-size:${Math.round(cell*.5)}px">${esc((nm(+w)[0]||'?').toUpperCase())}</text>`}}
+ const myTurn=!over(S)&&!pending()&&(mode!=='online'||(S.t===seat&&bothIn()));
+ const sw=Math.max(5,cell*.05);
+ const line=(t,i,x1,y1,x2,y2)=>{const w=S[t][i];
+  if(w!=='0'){const isNew=S.l===t+i&&animate&&lastDrawn!==S.g+':'+S.q;
+   return `<line class="drawn${isNew?' fresh':''}" pathLength="100" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--p${w})" stroke-width="${sw}"/>`}
+  const hz=y1===y2,hx=Math.min(x1,x2)-(hz?0:cell*.26),hy=Math.min(y1,y2)-(hz?cell*.26:0);
+  return (myTurn?`<rect class="slot" data-t="${t}" data-i="${i}" x="${hx}" y="${hy}" width="${hz?cell:cell*.52}" height="${hz?cell*.52:cell}"/>`:'')+`<line class="slotline" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke-width="${sw*.7}" style="--hover:var(--p${S.t})"/>`};
+ const gap=10;
+ for(let r=0;r<=n;r++)for(let c=0;c<n;c++){const y=pad+r*cell;o+=line('h',r*n+c,pad+c*cell+gap,y,pad+(c+1)*cell-gap,y)}
+ for(let r=0;r<n;r++)for(let c=0;c<=n;c++){const x=pad+c*cell;o+=line('v',r*(n+1)+c,x,pad+r*cell+gap,x,pad+(r+1)*cell-gap)}
+ for(let r=0;r<=n;r++)for(let c=0;c<=n;c++)o+=`<circle cx="${pad+c*cell}" cy="${pad+r*cell}" r="${Math.max(5,cell*.045)}" fill="var(--dot)"/>`;
+ svg.innerHTML=o;svg.classList.toggle('locked',over(S));
+ if(animate)lastDrawn=S.g+':'+S.q;
+
+ const s1=score(S,1),s2=score(S,2);
+ for(const p of[1,2]){$('n'+p).textContent=label(p);$('s'+p).textContent=p===1?s1:s2;
+  $('pl'+p).classList.toggle('on',!over(S)&&S.t===p);
+  const away=mode==='online'&&p!==seat&&players[p]&&players[p].on===false;
+  $('t'+p).textContent=away?'away':(!over(S)&&S.t===p?(mode==='online'&&p===seat?'your move':'their move'):'')}
+ const tot=S.w[0]+S.w[1];$('series').textContent=`Game ${S.gn||1}`+(tot?` · won: ${label(1)} ${S.w[0]}, ${label(2)} ${S.w[1]}`:'');
+
+ const st=$('status');
+ $('stake').classList.toggle('hide',over(S));
+ if(over(S))st.textContent='';
+ else if(mode==='online')st.innerHTML=S.t===seat?`<span class="c${S.t}t">Your move</span>`:`<span class="c${S.t}t">${esc(nm(S.t))}</span> is thinking…`;
+ else st.innerHTML=`<span class="c${S.t}t">${esc(nm(S.t))}</span>'s move`;
+
+ const end=$('end');
+ if(over(S)){end.classList.remove('hide');const w=winnerOf(S);
+  $('endT').innerHTML=w===0?'A tie':`<span class="c${w}t">${mode==='online'&&w===seat?'You won':esc(nm(w))+' won'}</span>`;
+  const c=S.c;let qa='',sub=`${Math.max(s1,s2)} to ${Math.min(s1,s2)}`;
+  if(w===0)sub+=' — play a tie-breaker to see who asks.';
+  else if(c&&(c.s==='done'||c.s==='skip'))qa=`<div class="qa"><p class="who c${c.from}t">${esc(label(c.from))} asked</p><p class="q">${esc(c.q)}</p><p class="a${c.s==='skip'?' sk':''}">${c.s==='skip'?'Maybe another time':esc(c.a)}</p></div>`;
+  else if(c)sub+=c.s==='ask'?` — ${mode==='online'&&w===seat?'your':esc(nm(w))+'’s'} question is on its way.`:' — waiting for the answer.';
+  $('endS').textContent=sub;$('endQA').innerHTML=qa;
+  $('again').textContent=w===0?'Play the tie-breaker':'Play another';$('again').disabled=!!pending();$('endSize').classList.toggle('hide',!!pending());
+ }else end.classList.add('hide');
+
+ renderJournal();
+ const key=(myqOpen?'myq':'')+(S.c?S.c.id+S.c.s:'none')+seat+'|'+tab;
+ if(key!==sheetKey){sheetKey=key;if(tab==='play'||myqOpen)renderSheet();else closeSheet()}
+}
+function miniBoard(r){
+ const n=+r.n;if(![3,4,5,6].includes(n)||typeof r.h!=='string'||typeof r.v!=='string'||typeof r.b!=='string'||r.h.length!==(n+1)*n||r.v.length!==n*(n+1)||r.b.length!==n*n)return '';
+ const pad=8,c=(100-pad*2)/n;let o='';
+ for(let y=0;y<n;y++)for(let x=0;x<n;x++){const w=r.b[y*n+x];if(w==='1'||w==='2')o+=`<rect x="${pad+x*c+1.2}" y="${pad+y*c+1.2}" width="${c-2.4}" height="${c-2.4}" rx="1.5" fill="var(--p${w}s)"/>`}
+ for(let y=0;y<=n;y++)for(let x=0;x<n;x++){const w=r.h[y*n+x];o+=`<line x1="${pad+x*c}" y1="${pad+y*c}" x2="${pad+(x+1)*c}" y2="${pad+y*c}" stroke="${w==='1'||w==='2'?`var(--p${w})`:'var(--slot)'}" stroke-width="1.8" stroke-linecap="round"/>`}
+ for(let y=0;y<n;y++)for(let x=0;x<=n;x++){const w=r.v[y*(n+1)+x];o+=`<line x1="${pad+x*c}" y1="${pad+y*c}" x2="${pad+x*c}" y2="${pad+(y+1)*c}" stroke="${w==='1'||w==='2'?`var(--p${w})`:'var(--slot)'}" stroke-width="1.8" stroke-linecap="round"/>`}
+ for(let y=0;y<=n;y++)for(let x=0;x<=n;x++)o+=`<circle cx="${pad+x*c}" cy="${pad+y*c}" r="1.6" fill="var(--dot)"/>`;
+ return `<button class="minib" data-mini="${esc(r.id)}" aria-label="View final board"><svg class="mini" viewBox="0 0 100 100" role="img" aria-label="Final board">${o}</svg></button>`;
+}
+const rxOpen=new Set();
+function reactBlock(r,rx,name){
+ const groups={};for(const x of rx){const e=emojiOnly(x.e);if(!e)continue;const g=groups[e]=groups[e]||{e,n:0,a:0,b:0};g.n++;if(x.by===1)g.a++;else g.b++}
+ const top=Object.values(groups).sort((p,q)=>q.n-p.n);
+ const shown=top.slice(0,8),rest=top.length-shown.length;
+ const summary=`<div class="rsum">${shown.map(g=>`<span tabindex="0" data-tip="${esc(g.e)} ${g.n} times · ${esc(name(r,1))} ${g.a}, ${esc(name(r,2))} ${g.b}"><em>${esc(g.e)}</em><b>${g.n}</b><i style="--a:${Math.round(g.a/g.n*100)}%"></i></span>`).join('')}${rest>0?`<span class="more2" tabindex="0" data-tip="${esc(top.slice(8).map(g=>g.e+' '+g.n).join('  '))}">+${rest}</span>`:''}</div>`;
+ const LIMIT=16,open=rxOpen.has(r.id),list=open?rx:rx.slice(0,LIMIT);
+ const timeline=rx.length>6?`<details class="rtl"${open?' open':''} data-rx="${esc(r.id)}"><summary>In order</summary><div class="rxs">${list.map((x,i)=>`<span tabindex="0" style="--c:var(--p${x.by})" data-tip="${esc(name(r,x.by))} · #${i+1}">${esc(emojiOnly(x.e))}</span>`).join('')}${!open&&rx.length>LIMIT?`<button class="link rxmore" data-rxall="${esc(r.id)}">Show all ${rx.length}</button>`:''}</div></details>`
+  :`<div class="rxs">${rx.map((x,i)=>`<span tabindex="0" style="--c:var(--p${x.by})" data-tip="${esc(name(r,x.by))} · #${i+1}">${esc(emojiOnly(x.e))}</span>`).join('')}</div>`;
+ const a=rx.filter(x=>x.by===1).length,b=rx.length-a;
+ return `<div class="rx"><p class="lbl">Reactions · ${rx.length}<span><i style="background:var(--p1)"></i>${esc(name(r,1))} ${a} <i style="background:var(--p2);margin-left:6px"></i>${esc(name(r,2))} ${b}</span></p>${rx.length>6?summary:''}${timeline}</div>`;
+}
+function renderJournal(){
+ const j=$('journal');
+ const rs=results.filter(r=>r&&typeof r.id==='string').slice().sort((a,b)=>(b.t||0)-(a.t||0));
+ const byId=Object.fromEntries(journal.map(e=>[String(e.id),e]));
+ if(!rs.length&&!journal.length){j.innerHTML=`<div class="empty">${NB}<b>No games yet</b>Finish your first game and it shows up here, with the question the winner asked.</div>`;return}
+ const w1=rs.filter(r=>r.w===1).length,w2=rs.filter(r=>r.w===2).length,ties=rs.filter(r=>!r.w).length;
+ const qa=e=>e?`<div class="qa"><p class="who c${e.fs===2?2:1}t">${esc(e.from)} asked ${esc(e.to)}</p><p class="q">${esc(e.q)}</p><p class="a${e.skip?' sk':''}">${e.skip?'Maybe another time':esc(e.a)}</p></div>`:'';
+ const name=(r,p)=>mode==='online'?label(p):(p===1?r.p1:r.p2)||nm(p);
+ j.innerHTML=`<p class="anshead">Our games</p><p class="muted small" style="margin:0 2px 14px">${rs.length} game${rs.length===1?'':'s'} played${mode==='online'?' in this room':' on this device'}</p>
+  <div class="tally"><div><b class="c1t">${w1}</b><span>${esc(label(1))} won</span></div><div><b class="c2t">${w2}</b><span>${esc(label(2))} won</span></div><div><b>${ties}</b><span>ties</span></div></div>`+
+  rs.map(r=>{const res=r.w?`<span class="c${r.w}t">${esc(name(r,r.w))} won</span>`:'A tie';
+   const rx=(rlog[r.id]||[]);
+   const rxHtml=rx.length?reactBlock(r,rx,name):'';
+   return `<div class="game"><div class="top2">${miniBoard(r)}<div class="ghead"><div><div class="gnum">Game ${+r.gn||''} · ${(+r.n||4)+1} dots</div><p class="gres">${res}</p></div><div class="gscore"><span class="c1t">${+r.s1||0}</span> – <span class="c2t">${+r.s2||0}</span></div></div></div>${qa(byId[r.id+'-q'])}${rxHtml}</div>`}).join('')+
+  journal.filter(e=>!rs.some(r=>r.id+'-q'===String(e.id))).map(e=>`<div class="game">${qa(e)}</div>`).join('');
+}
+
+/* ---------- online ---------- */
+function valid(st){const n=st&&st.n;return st&&typeof st==='object'&&SIZES.includes(n)&&typeof st.h==='string'&&st.h.length===(n+1)*n&&typeof st.v==='string'&&st.v.length===n*(n+1)&&typeof st.b==='string'&&st.b.length===n*n&&/^[012]*$/.test(st.h+st.v+st.b)&&(st.t===1||st.t===2)&&typeof st.g==='number'&&typeof st.u==='number'}
+function clean(st){
+ const w=Array.isArray(st.w)&&st.w.length===2?st.w.map(x=>Math.max(0,Math.min(999,+x|0))):[0,0];
+ const c0=st.c,c=c0&&typeof c0==='object'&&typeof c0.id==='string'&&(c0.from===1||c0.from===2)&&['ask','wait','done','skip'].includes(c0.s)?{id:c0.id.slice(0,40),from:c0.from,s:c0.s,q:String(c0.q||'').slice(0,140),a:String(c0.a||'').slice(0,280)}:null;
+ return {gn:Math.max(1,Math.min(9999,+st.gn|0||1)),g:st.g,u:st.u,q:+st.q||0,n:st.n,h:st.h,v:st.v,b:st.b,t:st.t,l:typeof st.l==='string'?st.l.slice(0,6):'',w,c};
+}
+function setWait(txt,busy){$('waitTxt').textContent=txt;$('waitPulse').classList.toggle('hide',!busy)}
+async function enter(c,creating){
+ c=String(c||'').toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,6);
+ if(!c){$('startMsg').textContent='Type the code she sent you.';return}
+ stopListening();
+ code=c;mode='online';tab='play';seat=0;players={};journal=[];results=[];rlog={};S=fresh();
+ $('codeout').textContent=c.toUpperCase();$('invite').value=inviteLink();$('copyHelp').classList.add('hide');
+ try{history.replaceState(null,'','#'+c)}catch(e){}
+ render(false);setWait('Connecting…',true);
+ const d=await fbP;
+ if(mode!=='online'||code!==c)return;
+ if(!d){setWait('Online play isn’t set up yet: add your Firebase config to index.html (see README).',false);return}
+ try{
+  const pRef=F.ref(d,gpath('players'));
+  if(!creating){const snap=await F.get(pRef);if(!snap.exists()){mode='start';$('startMsg').textContent='No game with that code. Check it with him.';render(false);return}}
+  const res=await F.runTransaction(pRef,cur=>{cur=cur||{};
+   for(const s of[1,2])if(cur[s]&&cur[s].id===myId){cur[s].name=myName;cur[s].on=true;return cur}
+   for(const s of[1,2])if(!cur[s]){cur[s]={id:myId,name:myName,on:true};return cur}
+   return;});
+  const val=res.snapshot.val()||{};
+  seat=[1,2].find(s=>val[s]&&val[s].id===myId)||0;
+  if(!seat){mode='start';$('startMsg').textContent='This game already has two players.';render(false);return}
+  const onRef=F.ref(d,gpath(`players/${seat}/on`));
+  F.onDisconnect(onRef).set(false);
+  unsubs.push(F.onValue(F.ref(d,'.info/connected'),s=>{if(s.val()===true){F.set(onRef,true);F.onDisconnect(onRef).set(false)}}));
+  const sRef=F.ref(d,gpath('state'));
+  if(creating)await F.set(sRef,{...S,u:1});
+  unsubs.push(F.onValue(sRef,snap=>{const st=snap.val();if(valid(st)){S=clean(st);render(true)}}));
+  unsubs.push(F.onValue(pRef,snap=>{players=snap.val()||{};if(!bothIn())setWait('Waiting for her to join',true);render(false)}));
+  unsubs.push(F.onValue(F.query(F.ref(d,gpath('answers')),F.limitToLast(200)),snap=>{const v=snap.val()||{};const before=journal.length;
+   journal=Object.values(v).filter(e=>e&&typeof e.q==='string');if(journal.length>before&&tab!=='ans'&&before>0)unread=true;render(false)}));
+  unsubs.push(F.onValue(F.query(F.ref(d,gpath('results')),F.limitToLast(300)),snap=>{const v=snap.val()||{};const before=results.length;
+   results=Object.values(v).filter(r=>r&&typeof r.id==='string');if(results.length>before&&before>0&&tab!=='ans')unread=true;render(false)}));
+  unsubs.push(F.onValue(F.ref(d,gpath('reactlog')),snap=>{const v=snap.val()||{};rlog={};
+   for(const [g,items] of Object.entries(v))rlog[g]=Object.values(items||{}).filter(x=>x&&emojiOnly(x.e)&&(x.by===1||x.by===2)).sort((a,b)=>(a.t||0)-(b.t||0)).slice(-300);
+   if(tab==='ans')render(false)}));
+  reactReady=false;
+  unsubs.push(F.onValue(F.ref(d,gpath('react')),snap=>{const v=snap.val();
+   if(!reactReady){reactReady=true;if(v&&v.id)seenReact=v.id;return}
+   if(v&&typeof v.id==='string'&&v.id!==seenReact&&emojiOnly(v.e)&&(v.by===1||v.by===2)){seenReact=v.id;if(v.by!==seat&&tab==='play')burst(emojiOnly(v.e),v.by)}}));
+  if(creating)setWait('Waiting for her to join',true);
+ }catch(e){console.error(e);setWait('Couldn’t connect to the game. Check your Firebase rules (README) and try again.',false)}
+}
+function stopListening(){for(const u of unsubs)try{u()}catch(e){}unsubs=[];if(db&&code&&seat)try{F.set(F.ref(db,gpath(`players/${seat}/on`)),false)}catch(e){}}
+function mkCode(){const a='bcdfghjkmnprstvz',v='aeiou';let s='';for(let i=0;i<5;i++)s+=(i%2?v:a)[Math.floor(Math.random()*(i%2?5:16))];return s}
+const inviteLink=()=>location.origin+location.pathname+'#'+code;
+const inviteMsg=()=>`Up for a little game of dots and boxes? Winner gets to ask one question :) ${inviteLink()}`;
+
+/* ---------- reactions ---------- */
+const REACTS=['😄','🙈','😏','😮','👏','🤍'];
+const EMO=/\p{Extended_Pictographic}|\p{Regional_Indicator}/u;
+function emojiOnly(str){str=String(str||'').trim();if(!str||str.length>16)return '';
+ let parts=[];try{parts=[...new Intl.Segmenter(undefined,{granularity:'grapheme'}).segment(str)].map(x=>x.segment).filter(g=>g.trim())}catch(e){parts=[...str].filter(g=>g.trim())}
+ if(!parts.length||parts.length>3||!parts.every(g=>EMO.test(g)))return '';return parts.join('')}
+let recentE=[];try{recentE=JSON.parse(store.get('dab-recent-e')||'[]').map(emojiOnly).filter(Boolean).slice(0,8)}catch(e){}
+function renderRecent(){$('recentE').innerHTML=recentE.map(e=>`<button data-e="${esc(e)}" aria-label="Send ${esc(e)}">${esc(e)}</button>`).join('')}
+renderRecent();
+const EGROUPS=[['Smiles','😊 😄 😂 🤭 😅 🥹 😍 🥰 😘 😉 😌 😇 🤗 😋 😎 🤩'],['Teasing','😏 😜 🙃 🤨 😒 🙄 😤 😬 🫣 🙈 😶 🤫 🤔 🧐 😈 🤡'],['Feelings','😮 😳 🥺 😢 😭 🥲 😴 🫠 🤯 😱 😩 🫶 💭 💤 💯 ✨'],['Hearts','🤍 ❤️ 🩷 💗 💖 💕 💞 💌 💐 🌸 🌹 🌷 🍫 ☕ 🌙 ⭐'],['Reactions','👏 🙌 👍 👎 👀 🤝 🫡 💪 🔥 🎉 🏆 🎯 😤 💀 🫢 ✌️']];
+$('egrid').innerHTML=EGROUPS.map(([t,list])=>`<h4>${t}</h4><div class="row">${[...new Set(list.split(' '))].map(e=>`<button data-e="${e}" aria-label="Send ${e}">${e}</button>`).join('')}</div>`).join('');
+$('egrid').addEventListener('click',ev=>{const b=ev.target.closest('[data-e]');if(b)sendReact(b.dataset.e)});
+let lastSent=0,seenReact='',reactReady=false;
+function burst(e,by){
+ const r=$('board').getBoundingClientRect(),layer=$('floaters');
+ const x0=r.left+r.width*(by===1?.27:.73),y0=Math.min(r.bottom,innerHeight)-40;
+ for(let k=0;k<3;k++){const el=document.createElement('span');el.className='fl';el.textContent=e;
+  el.style.left=(x0+(Math.random()*40-20))+'px';el.style.top=y0+'px';el.style.fontSize=(k?32:60)+'px';
+  el.style.setProperty('--dx',(Math.random()*90-45)+'px');el.style.animationDelay=(k*140)+'ms';
+  layer.appendChild(el);setTimeout(()=>el.remove(),3000)}
+ const pl=$('pl'+by);pl.classList.remove('bump');void pl.offsetWidth;pl.classList.add('bump');
+}
+function sendReact(e){
+ e=emojiOnly(e);if(!e)return;
+ if(!REACTS.includes(e)){recentE=[e,...recentE.filter(x=>x!==e)].slice(0,8);store.set('dab-recent-e',JSON.stringify(recentE));renderRecent()}const now=Date.now();if(now-lastSent<600)return;lastSent=now;
+ const by=mode==='online'?seat:S.t;burst(e,by);
+ const gid=String(S.g);
+ if(online()){const id=myId+'-'+now;seenReact=id;F.set(F.ref(db,gpath('react')),{e,by,id,t:now}).catch(()=>{});F.set(F.ref(db,gpath(`reactlog/${gid}/${id}`)),{e,by,t:now}).catch(()=>{})}
+ else{(rlog[gid]=rlog[gid]||[]).push({e,by,t:now});rlog[gid]=rlog[gid].slice(-300);try{const keys=Object.keys(rlog);if(keys.length>60)for(const k of keys.slice(0,keys.length-60))delete rlog[k]}catch(x){}store.set(xKey,JSON.stringify(rlog))}
+}
+$('reacts').addEventListener('click',ev=>{const b=ev.target.closest('[data-e]');if(b)sendReact(b.dataset.e)});
+$('recentE').addEventListener('click',ev=>{const b=ev.target.closest('[data-e]');if(b)sendReact(b.dataset.e)});
+$('moreE').addEventListener('click',()=>{const box=$('anyE'),open=box.classList.toggle('hide')===false;$('moreE').setAttribute('aria-expanded',open);if(open)$('emojiIn').focus()});
+function sendTyped(){const v=emojiOnly($('emojiIn').value);if(!v){$('emojiHelp').textContent='Only emojis here 🙂';return}$('emojiHelp').textContent='Use your emoji keyboard';sendReact(v);$('emojiIn').value=''}
+$('emojiSend').addEventListener('click',sendTyped);$('emojiIn').addEventListener('keydown',e=>{if(e.key==='Enter')sendTyped()});
+
+/* ---------- events ---------- */
+$('board').addEventListener('click',e=>{const s=e.target.closest('.slot');if(s)play(s.dataset.t,+s.dataset.i)});
+$('again').addEventListener('click',()=>{if(pending())return;const w=winnerOf(S);S={...fresh({w:S.w,t:w?other(w):1,gn:(S.gn||1)+1}),u:S.u};commit(S)});
+for(const id of['segStart','segEnd'])$(id).addEventListener('click',ev=>{const b=ev.target.closest('[data-d]');if(b)pickDots(+b.dataset.d)});
+renderSeg();
+let tipEl=null;
+function showTip(el){const t=$('tip');if(tipEl)tipEl.classList.remove('tipon');tipEl=el;el.classList.add('tipon');t.textContent=el.dataset.tip;t.classList.remove('hide');
+ const r=el.getBoundingClientRect();let x=r.left+r.width/2;const half=Math.min(120,t.offsetWidth/2);x=Math.max(half+8,Math.min(innerWidth-half-8,x));t.style.left=x+'px';t.style.top=r.top+'px';
+ if(r.top<t.offsetHeight+16){t.style.top=(r.bottom+t.offsetHeight+20)+'px'}}
+function hideTip(){$('tip').classList.add('hide');if(tipEl)tipEl.classList.remove('tipon');tipEl=null}
+$('journal').addEventListener('pointerover',e=>{if(e.pointerType==='mouse'){const el=e.target.closest('[data-tip]');if(el)showTip(el)}});
+$('journal').addEventListener('pointerout',e=>{if(e.pointerType==='mouse'&&e.target.closest('[data-tip]'))hideTip()});
+$('journal').addEventListener('focusin',e=>{const el=e.target.closest('[data-tip]');if(el&&el.matches(':focus-visible'))showTip(el)});
+$('journal').addEventListener('focusout',e=>{if(e.target.matches&&e.target.matches(':focus-visible'))hideTip()});
+document.addEventListener('click',e=>{const el=e.target.closest('[data-tip]');if(el){if(tipEl===el)hideTip();else showTip(el)}else hideTip()},true);
+addEventListener('scroll',hideTip,{passive:true});
+$('journal').addEventListener('toggle',ev=>{const d=ev.target;if(d.matches&&d.matches('details[data-rx]')){if(!d.open)rxOpen.delete(d.dataset.rx)}},true);
+$('journal').addEventListener('click',ev=>{const m=ev.target.closest('[data-rxall]');if(m){rxOpen.add(m.dataset.rxall);render(false);return}const b=ev.target.closest('[data-mini]');if(!b)return;const r=results.find(x=>x.id===b.dataset.mini);if(!r)return;
+ const big=miniBoard(r).replace('class="mini"','class="mini" style="width:100%;height:auto;max-width:440px;margin:0 auto"').replace(/^<button[^>]*>|<\/button>$/g,'');
+ const nameOf=p=>mode==='online'?label(p):(p===1?r.p1:r.p2)||nm(p);
+ openSheet(`<p class="kicker" style="color:var(--soft)">Game ${+r.gn||''} · ${(+r.n||4)+1} dots</p><p class="bigq">${r.w?esc(nameOf(r.w))+' won':'A tie'}, <span class="c1t">${+r.s1||0}</span> – <span class="c2t">${+r.s2||0}</span></p>${big}<button class="line" id="closeMini" style="width:100%;margin-top:16px">Close</button>`,'var(--p2)',false);
+ $('closeMini').addEventListener('click',()=>{closeSheet();sheetKey=''});$('scrim').onclick=()=>{closeSheet();sheetKey='';$('scrim').onclick=null}});
+$('tabPlay').addEventListener('click',()=>{tab='play';render(false)});
+$('tabAns').addEventListener('click',()=>{tab='ans';unread=false;render(false)});
+$('myqBtn').addEventListener('click',()=>{myqOpen=true;sheetKey='';render(false)});
+$('scrim').addEventListener('click',()=>{if(myqOpen){myqOpen=false;sheetKey='';render(false)}});
+$('myname').addEventListener('input',()=>{myName=$('myname').value.trim().slice(0,16);store.set('dab-name',myName)});
+const add2=()=>{addQ($('qin2').value);$('qin2').value='';listInto($('mylist2'))};
+$('qadd2').addEventListener('click',add2);$('qin2').addEventListener('keydown',e=>{if(e.key==='Enter')add2()});
+$('local').addEventListener('click',()=>{stopListening();mode='local';code='';seat=0;loadLocal();S=fresh();sheetKey='';render(false)});
+function leave(){stopListening();code='';seat=0;players={};mode='start';tab='play';myqOpen=false;try{history.replaceState(null,'',location.pathname)}catch(e){}render(false)}
+$('leave').addEventListener('click',leave);$('leave2').addEventListener('click',leave);
+function legacyCopy(text){try{const t=document.createElement('textarea');t.value=text;t.setAttribute('readonly','');t.style.cssText='position:fixed;top:-1000px;opacity:0';document.body.appendChild(t);t.select();const ok=document.execCommand('copy');t.remove();return ok}catch(e){return false}}
+$('copy').addEventListener('click',()=>{const msg=inviteMsg(),btn=$('copy');
+ const done=()=>{btn.textContent='Copied — paste it to her';$('copyHelp').classList.add('hide');setTimeout(()=>btn.textContent='Copy invite link',2400)};
+ const fail=()=>{if(legacyCopy(msg)){done();return}const inp=$('invite');inp.focus();inp.select();$('copyHelp').classList.remove('hide')};
+ if(navigator.share&&/Android|iPhone|iPad/i.test(navigator.userAgent)){navigator.share({text:msg}).catch(()=>{});return}
+ try{if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(msg).then(done,fail);else fail()}catch(e){fail()}});
+$('invite').addEventListener('focus',e=>e.target.select());
+$('create').addEventListener('click',()=>{if(!myName){$('startMsg').textContent='Add your name first, so she knows it’s you.';$('myname').focus();return}enter(mkCode(),true)});
+$('joinb').addEventListener('click',()=>{if(!myName){$('startMsg').textContent='Add your name first.';$('myname').focus();return}enter($('codein').value)});
+$('codein').addEventListener('keydown',e=>{if(e.key==='Enter')$('joinb').click()});
+window.addEventListener('pagehide',()=>{if(db&&code&&seat)try{F.set(F.ref(db,gpath(`players/${seat}/on`)),false)}catch(e){}});
+
+render(false);$('startMsg').textContent='';
+{const h=(location.hash||'').slice(1);if(/^[a-z0-9]{3,6}$/i.test(h)){if(myName)enter(h);else{$('codein').value=h.toUpperCase();$('startMsg').textContent='You’ve been invited. Add your name and tap Join.'}}}
+fbP.then(d=>{if(!d&&mode==='start'&&!$('startMsg').textContent)$('startMsg').textContent='Online play needs Firebase set up (see README). You can still try it on this device.'});
+</script>
+</body>
+</html>
